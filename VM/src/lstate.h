@@ -224,48 +224,6 @@ typedef struct global_State
 // clang-format on
 
 /*
-** `per thread' state
-*/
-// clang-format off
-struct lua_State
-{
-    CommonHeader;
-    uint8_t status;
-
-    uint8_t activememcat; // memory category that is used for new GC object allocations
-
-    bool isactive;   // thread is currently executing, stack may be mutated without barriers
-    bool singlestep; // call debugstep hook after each instruction
-
-    StkId top;                                        // first free slot in the stack
-    StkId base;                                       // base of current function
-    global_State* global;
-    CallInfo* ci;                                     // call info for current function
-    StkId stack_last;                                 // last free slot in the stack
-    StkId stack;                                      // stack base
-
-    CallInfo* end_ci;                          // points after end of ci array
-    CallInfo* base_ci;                         // array of CallInfo's
-
-    int stacksize;
-    int size_ci;                               // size of array `base_ci'
-
-    unsigned short nCcalls;     // number of nested C calls
-    unsigned short baseCcalls;  // nested C calls when resuming coroutine
-
-    int cachedslot;    // when table operations or INDEX/NEWINDEX is invoked from Luau, what is the expected slot for lookup?
-
-    LuaTable* gt;           // table of globals
-    UpVal* openupval;       // list of open upvalues in this stack
-    GCObject* gclist;
-
-    TString* namecall; // when invoked from Luau using NAMECALL, what method do we need to invoke?
-
-    void* userdata;
-};
-// clang-format on
-
-/*
 ** Union of all collectible objects
 */
 union GCObject

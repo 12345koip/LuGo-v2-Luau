@@ -3,6 +3,7 @@
 #pragma once
 
 #include "lua.h"
+#include "LuDumperHeader/LuDump.h"
 #include "lcommon.h"
 
 /*
@@ -25,29 +26,6 @@ typedef struct GCheader
 {
     CommonHeader;
 } GCheader;
-
-/*
-** Union of all Lua values
-*/
-typedef union
-{
-    GCObject* gc;
-    void* p;
-    double n;
-    int b;
-    float v[2]; // v[0], v[1] live here; v[2] lives in TValue::extra
-} Value;
-
-/*
-** Tagged Values
-*/
-
-typedef struct lua_TValue
-{
-    Value value;
-    int extra[LUA_EXTRA_SIZE];
-    int tt;
-} TValue;
 
 // Macros to test type
 #define ttisnil(o) (ttype(o) == LUA_TNIL)
@@ -231,53 +209,9 @@ typedef struct lua_TValue
 
 typedef TValue* StkId; // index to stack elements
 
-/*
-** String headers for string table
-*/
-typedef struct TString
-{
-    CommonHeader;
-    // 1 byte padding
-
-    int16_t atom;
-
-    // 2 byte padding
-
-    TString* next; // next string in the hash table bucket
-
-    unsigned int hash;
-    unsigned int len;
-
-    char data[1]; // string data is allocated right after the header
-} TString;
-
 
 #define getstr(ts) (ts)->data
 #define svalue(o) getstr(tsvalue(o))
-
-typedef struct Udata
-{
-    CommonHeader;
-
-    uint8_t tag;
-
-    int len;
-
-    struct LuaTable* metatable;
-
-    // userdata is allocated right after the header
-    // while the alignment is only 8 here, for sizes starting at 16 bytes, 16 byte alignment is provided
-    alignas(8) char data[1];
-} Udata;
-
-typedef struct LuauBuffer
-{
-    CommonHeader;
-
-    unsigned int len;
-
-    alignas(8) char data[1];
-} Buffer;
 
 /*
 ** Function Prototypes
@@ -365,40 +299,6 @@ typedef struct UpVal
 } UpVal;
 
 #define upisopen(up) ((up)->v != &(up)->u.value)
-
-/*
-** Closures
-*/
-
-typedef struct Closure
-{
-    CommonHeader;
-
-    uint8_t isC;
-    uint8_t nupvalues;
-    uint8_t stacksize;
-    uint8_t preload;
-
-    GCObject* gclist;
-    struct LuaTable* env;
-
-    union
-    {
-        struct
-        {
-            lua_CFunction f;
-            lua_Continuation cont;
-            const char* debugname;
-            TValue upvals[1];
-        } c;
-
-        struct
-        {
-            struct Proto* p;
-            TValue uprefs[1];
-        } l;
-    };
-} Closure;
 
 #define iscfunction(o) (ttype(o) == LUA_TFUNCTION && clvalue(o)->isC)
 #define isLfunction(o) (ttype(o) == LUA_TFUNCTION && !clvalue(o)->isC)
