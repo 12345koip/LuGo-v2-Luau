@@ -33,6 +33,9 @@
 
 #include <string.h>
 
+#include "Analysis/Dissassembler/AsmInstruction.hpp"
+#include "Analysis/Offsets/OffsetManager.hpp"
+
 // max size of both array and hash part is 2^MAXBITS
 #define MAXBITS 26
 #define MAXSIZE (1 << MAXBITS)
@@ -493,6 +496,16 @@ static void rehash(lua_State* L, LuaTable* t, const TValue* ek)
 
 LuaTable* luaH_new(lua_State* L, int narray, int nhash)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<LuaTable*(__fastcall*)(lua_State* L, int narray, int nhash)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaH_new)
+    );
+
+    return func(L, narray, nhash);
+
+
+
+
     LuaTable* t = luaM_newgco(L, LuaTable, sizeof(LuaTable), L->activememcat);
     luaC_init(L, t, LUA_TTABLE);
     t->metatable = NULL;
