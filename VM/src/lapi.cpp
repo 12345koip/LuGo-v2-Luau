@@ -15,6 +15,9 @@
 
 #include <string.h>
 
+#include "src/Internal/Analysis/Dissassembler/AsmInstruction.hpp"
+#include "src/Internal/Analysis/Offsets/OffsetManager.hpp"
+
 /*
  * This file contains most implementations of core Lua APIs from lua.h.
  *
@@ -98,7 +101,7 @@ static LUAU_NOINLINE TValue* pseudo2addr(lua_State* L, int idx)
     }
 }
 
-static LUAU_FORCEINLINE TValue* index2addr(lua_State* L, int idx)
+LUAU_FORCEINLINE TValue* index2addr(lua_State* L, int idx)
 {
     if (idx > 0)
     {
@@ -169,6 +172,15 @@ int lua_checkstack(lua_State* L, int size)
 
 void lua_rawcheckstack(lua_State* L, int size)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<void(__fastcall*)(lua_State* L, int size)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::lua_rawcheckstack)
+    );
+    return func(L, size);
+
+
+
+
     luaD_checkstack(L, size);
     expandstacklimit(L, L->top + size);
 }
@@ -297,6 +309,15 @@ void lua_replace(lua_State* L, int idx)
 
 void lua_pushvalue(lua_State* L, int idx)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<void(__fastcall*)(lua_State* L, int idx)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::lua_pushvalue)
+    );
+
+    return func(L, idx);
+
+
+
     luaC_threadbarrier(L);
     StkId o = index2addr(L, idx);
     setobj2s(L, L->top, o);

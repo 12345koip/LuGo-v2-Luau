@@ -13,6 +13,9 @@
 
 #include <string.h>
 
+#include "Analysis/Dissassembler/AsmInstruction.hpp"
+#include "Analysis/Offsets/OffsetManager.hpp"
+
 template<typename T>
 struct TempBuffer
 {
@@ -605,6 +608,18 @@ static int loadsafe(
 
 int luau_load(lua_State* L, const char* chunkname, const char* data, size_t size, int env)
 {
+    auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    auto func = reinterpret_cast<int(__fastcall*)(lua_State* L, const char* chunkname, const char* data, size_t size, int env)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luau_load)
+    );
+
+    return func(L, chunkname, data, size, env);
+
+
+
+
+
+
     // we will allocate a fair amount of memory so check GC before we do
     luaC_checkGC(L);
 

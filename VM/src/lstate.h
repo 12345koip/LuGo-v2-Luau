@@ -4,6 +4,7 @@
 
 #include "lobject.h"
 #include "ltm.h"
+#include "LuDumperHeader/LuDump.h"
 
 // registry
 #define registry(L) (&L->global->registry)
@@ -16,12 +17,6 @@
 #define BASIC_STACK_SIZE (2 * LUA_MINSTACK)
 
 // clang-format off
-typedef struct stringtable
-{
-    TString** hash;
-    uint32_t nuse; // number of elements
-    int size;
-} stringtable;
 // clang-format on
 
 /*
@@ -53,16 +48,6 @@ typedef struct stringtable
 ** the `flags` field in CallInfo contains internal execution flags that are important for pcall/etc, see LUA_CALLINFO_*
 */
 // clang-format off
-typedef struct CallInfo
-{
-    StkId base;    // base for this function
-    StkId func;    // function index in the stack
-    StkId top;     // top for this function
-    const Instruction* savedpc;
-
-    int nresults;       // expected number of results from this function
-    unsigned int flags; // call frame flags, see LUA_CALLINFO_*
-} CallInfo;
 // clang-format on
 
 #define LUA_CALLINFO_RETURN (1 << 0) // should the interpreter return after returning from this callinfo? first frame must have this set
@@ -74,153 +59,10 @@ typedef struct CallInfo
 #define f_isLua(ci) (!ci_func(ci)->isC)
 #define isLua(ci) (ttisfunction((ci)->func) && f_isLua(ci))
 
-struct GCStats
-{
-    // data for proportional-integral controller of heap trigger value
-    int32_t triggerterms[32] = {0};
-    uint32_t triggertermpos = 0;
-    int32_t triggerintegral = 0;
-
-    size_t atomicstarttotalsizebytes = 0;
-    size_t endtotalsizebytes = 0;
-    size_t heapgoalsizebytes = 0;
-
-    double starttimestamp = 0;
-    double atomicstarttimestamp = 0;
-    double endtimestamp = 0;
-};
-
-#ifdef LUAI_GCMETRICS
-struct GCCycleMetrics
-{
-    size_t starttotalsizebytes = 0;
-    size_t heaptriggersizebytes = 0;
-
-    double pausetime = 0.0; // time from end of the last cycle to the start of a new one
-
-    double starttimestamp = 0.0;
-    double endtimestamp = 0.0;
-
-    double marktime = 0.0;
-    double markassisttime = 0.0;
-    double markmaxexplicittime = 0.0;
-    size_t markexplicitsteps = 0;
-    size_t markwork = 0;
-
-    double atomicstarttimestamp = 0.0;
-    size_t atomicstarttotalsizebytes = 0;
-    double atomictime = 0.0;
-
-    // specific atomic stage parts
-    double atomictimeupval = 0.0;
-    double atomictimeweak = 0.0;
-    double atomictimegray = 0.0;
-    double atomictimeclear = 0.0;
-
-    double sweeptime = 0.0;
-    double sweepassisttime = 0.0;
-    double sweepmaxexplicittime = 0.0;
-    size_t sweepexplicitsteps = 0;
-    size_t sweepwork = 0;
-
-    size_t assistwork = 0;
-    size_t explicitwork = 0;
-
-    size_t propagatework = 0;
-    size_t propagateagainwork = 0;
-
-    size_t endtotalsizebytes = 0;
-};
-
-struct GCMetrics
-{
-    double stepexplicittimeacc = 0.0;
-    double stepassisttimeacc = 0.0;
-
-    // when cycle is completed, last cycle values are updated
-    uint64_t completedcycles = 0;
-
-    GCCycleMetrics lastcycle;
-    GCCycleMetrics currcycle;
-};
-#endif
-
-// Callbacks that can be used to to redirect code execution from Luau bytecode VM to a custom implementation (AoT/JiT/sandboxing/...)
-struct lua_ExecutionCallbacks
-{
-    void* context;
-    void (*close)(lua_State* L);                 // called when global VM state is closed
-    void (*destroy)(lua_State* L, Proto* proto); // called when function is destroyed
-    int (*enter)(lua_State* L, Proto* proto);    // called when function is about to start/resume (when execdata is present), return 0 to exit VM
-    void (*disable)(lua_State* L, Proto* proto); // called when function has to be switched from native to bytecode in the debugger
-    size_t (*getmemorysize)(lua_State* L, Proto* proto); // called to request the size of memory associated with native part of the Proto
-    uint8_t (*gettypemapping)(lua_State* L, const char* str, size_t len); // called to get the userdata type index
-};
-
 /*
 ** `global state', shared by all threads of this state
 */
 // clang-format off
-typedef struct global_State
-{
-    stringtable strt; // hash table for strings
-
-    lua_Alloc frealloc;   // function to reallocate memory
-    void* ud;             // auxiliary data to `frealloc'
-
-    uint8_t currentwhite;
-    uint8_t gcstate; // state of garbage collector
-
-    GCObject* gray;      // list of gray objects
-    GCObject* grayagain; // list of objects to be traversed atomically
-    GCObject* weak;      // list of weak tables (to be cleared)
-
-    size_t GCthreshold;                       // when totalbytes > GCthreshold, run GC step
-    size_t totalbytes;                        // number of bytes currently allocated
-
-    int gcgoal;                               // see LUAI_GCGOAL
-    int gcstepmul;                            // see LUAI_GCSTEPMUL
-    int gcstepsize;                           // see LUAI_GCSTEPSIZE
-
-    struct lua_Page* freepages[LUA_SIZECLASSES]; // free page linked list for each size class for non-collectable objects
-    struct lua_Page* freegcopages[LUA_SIZECLASSES]; // free page linked list for each size class for collectable objects
-    struct lua_Page* allpages; // page linked list with all pages for all non-collectable object classes (available with LUAU_ASSERTENABLED)
-    struct lua_Page* allgcopages; // page linked list with all pages for all collectable object classes
-    struct lua_Page* sweepgcopage; // position of the sweep in `allgcopages'
-
-    size_t memcatbytes[LUA_MEMORY_CATEGORIES]; // total amount of memory used by each memory category
-
-    struct lua_State* mainthread;
-    UpVal uvhead; // head of double-linked list of all open upvalues
-    struct LuaTable* mt[LUA_T_COUNT]; // metatables for basic types
-    TString* ttname[LUA_T_COUNT]; // names for basic types
-    TString* tmname[TM_N]; // array with tag-method names
-
-    TValue pseudotemp; // storage for temporary values used in pseudo2addr
-
-    TValue registry; // registry table, used by lua_ref and LUA_REGISTRYINDEX
-    int registryfree; // next free slot in registry
-
-    struct lua_jmpbuf* errorjmp; // jump buffer data for longjmp-style error handling
-
-    uint64_t rngstate; // PCG random number generator state
-    uint64_t ptrenckey[4]; // pointer encoding key for display
-
-    lua_Callbacks cb;
-
-    lua_ExecutionCallbacks ecb;
-
-    void (*udatagc[LUA_UTAG_LIMIT])(lua_State*, void*); // for each userdata tag, a gc callback to be called immediately before freeing memory
-    LuaTable* udatamt[LUA_UTAG_LIMIT]; // metatables for tagged userdata
-
-    TString* lightuserdataname[LUA_LUTAG_LIMIT]; // names for tagged lightuserdata
-
-    GCStats gcstats;
-
-#ifdef LUAI_GCMETRICS
-    GCMetrics gcmetrics;
-#endif
-} global_State;
 // clang-format on
 
 /*

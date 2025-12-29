@@ -12,6 +12,8 @@
 #include "lua.h"
 #include "lualib.h"
 
+#include "LuDumperHeader/LuDump.h"
+
 namespace Luau
 {
 

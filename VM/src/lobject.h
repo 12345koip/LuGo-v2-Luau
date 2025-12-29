@@ -275,28 +275,28 @@ typedef struct LocVar
 ** Upvalues
 */
 
-typedef struct UpVal
-{
-    CommonHeader;
-    uint8_t markedopen; // set if reachable from an alive thread (only valid during atomic)
-
-    // 4 byte padding (x64)
-
-    TValue* v; // points to stack or to its own value
-    union
-    {
-        TValue value; // the value (when closed)
-        struct
-        {
-            // global double linked list (when open)
-            struct UpVal* prev;
-            struct UpVal* next;
-
-            // thread linked list (when open)
-            struct UpVal* threadnext;
-        } open;
-    } u;
-} UpVal;
+// typedef struct UpVal
+// {
+//     CommonHeader;
+//     uint8_t markedopen; // set if reachable from an alive thread (only valid during atomic)
+//
+//     // 4 byte padding (x64)
+//
+//     TValue* v; // points to stack or to its own value
+//     union
+//     {
+//         TValue value; // the value (when closed)
+//         struct
+//         {
+//             // global double linked list (when open)
+//             struct UpVal* prev;
+//             struct UpVal* next;
+//
+//             // thread linked list (when open)
+//             struct UpVal* threadnext;
+//         } open;
+//     } u;
+// } UpVal;
 
 #define upisopen(up) ((up)->v != &(up)->u.value)
 

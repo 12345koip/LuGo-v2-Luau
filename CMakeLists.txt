@@ -296,4 +296,6 @@ endforeach()
 include_directories(
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/Dependencies/Internal
+    ${CMAKE_SOURCE_DIR}/src/Internal
+    ${CMAKE_CURRENT_SOURCE_DIR}/CodeGen/include/Luau
 )

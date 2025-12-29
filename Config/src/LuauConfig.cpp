@@ -12,6 +12,8 @@
 #include <optional>
 #include <string>
 
+#include "LuDumperHeader/LuDump.h"
+
 #define RETURN_WITH_ERROR(msg) \
     do \
     { \

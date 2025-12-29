@@ -10,6 +10,7 @@
 #include "lnumutils.h"
 
 #include <string.h>
+#include "src/Internal/Analysis/Offsets/OffsetManager.hpp"
 
 // limit for table tag-method chains (to avoid loops)
 #define MAXTAGLOOP 100
@@ -95,6 +96,16 @@ static void callTM(lua_State* L, const TValue* f, const TValue* p1, const TValue
 
 void luaV_gettable(lua_State* L, const TValue* t, TValue* key, StkId val)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<void(__fastcall*)(lua_State* L, const TValue* t, TValue* key, StkId val)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaV_gettable)
+    );
+
+    return func(L, t, key, val);
+
+
+
+
     int loop;
     for (loop = 0; loop < MAXTAGLOOP; loop++)
     {
@@ -130,6 +141,19 @@ void luaV_gettable(lua_State* L, const TValue* t, TValue* key, StkId val)
 
 void luaV_settable(lua_State* L, const TValue* t, TValue* key, StkId val)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<void(__fastcall*)(lua_State* L, const TValue* t, TValue* key, StkId val)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaV_settable)
+    );
+
+    return func(L, t, key, val);
+
+
+
+
+
+
+
     int loop;
     TValue temp;
     for (loop = 0; loop < MAXTAGLOOP; loop++)

@@ -7,6 +7,9 @@
 
 #include <string.h>
 
+#include "Analysis/Dissassembler/AsmInstruction.hpp"
+#include "Analysis/Offsets/OffsetManager.hpp"
+
 unsigned int luaS_hash(const char* str, size_t len)
 {
     // Note that this hashing algorithm is replicated in BytecodeBuilder.cpp, BytecodeBuilder::getStringHash
@@ -146,6 +149,16 @@ TString* luaS_buffinish(lua_State* L, TString* ts)
 
 TString* luaS_newlstr(lua_State* L, const char* str, size_t l)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<TString*(__fastcall*)(lua_State* L, const char* str, size_t l)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaS_newlstr)
+    );
+    return func(L, str, l);
+
+
+
+
+
     unsigned int h = luaS_hash(str, l);
     for (TString* el = L->global->strt.hash[lmod(h, L->global->strt.size)]; el != NULL; el = el->next)
     {

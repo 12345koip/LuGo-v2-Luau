@@ -5,6 +5,9 @@
 #include "lstate.h"
 #include "lmem.h"
 #include "lgc.h"
+#include "Analysis/Dissassembler/AsmInstruction.hpp"
+#include "Analysis/Offsets/OffsetManager.hpp"
+#include "LuDumperHeader/LuDump.h"
 
 Proto* luaF_newproto(lua_State* L)
 {
@@ -57,6 +60,17 @@ Proto* luaF_newproto(lua_State* L)
 
 Closure* luaF_newLclosure(lua_State* L, int nelems, LuaTable* e, Proto* p)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<Closure*(__fastcall*)(lua_State* L, int nelems, LuaTable* e, Proto* p)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaF_newLclosure)
+    );
+
+    return func(L, nelems, e, p);
+
+
+
+
+
     Closure* c = luaM_newgco(L, Closure, sizeLclosure(nelems), L->activememcat);
     luaC_init(L, c, LUA_TFUNCTION);
     c->isC = 0;
@@ -72,6 +86,16 @@ Closure* luaF_newLclosure(lua_State* L, int nelems, LuaTable* e, Proto* p)
 
 Closure* luaF_newCclosure(lua_State* L, int nelems, LuaTable* e)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<Closure*(__fastcall*)(lua_State* L, int nelems, LuaTable* e)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaF_newCclosure)
+    );
+
+    return func(L, nelems, e);
+
+
+
+
     Closure* c = luaM_newgco(L, Closure, sizeCclosure(nelems), L->activememcat);
     luaC_init(L, c, LUA_TFUNCTION);
     c->isC = 1;
