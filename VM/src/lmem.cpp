@@ -8,6 +8,9 @@
 
 #include <string.h>
 
+#include "Analysis/Dissassembler/Dissassembler.hpp"
+#include "Analysis/Offsets/OffsetManager.hpp"
+
 /*
  * Luau heap uses a size-segregated page structure, with individual pages and large allocations
  * allocated using system heap (via frealloc callback).
@@ -697,6 +700,20 @@ void luaM_visitpage(lua_Page* page, void* context, bool (*visitor)(void* context
 
 void luaM_visitgco(lua_State* L, void* context, bool (*visitor)(void* context, lua_Page* page, GCObject* gco))
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<void(__fastcall*)(lua_State* L, void* context, bool(__fastcall* visitor)(void*, lua_Page*, GCObject*))>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaM_visitgco)
+    );
+    return func(L, context, visitor);
+
+
+
+
+
+
+
+
+
     global_State* g = L->global;
 
     for (lua_Page* curr = g->allgcopages; curr;)

@@ -16,6 +16,9 @@
 
 #include <string.h>
 
+#include "Analysis/Dissassembler/AsmInstruction.hpp"
+#include "Analysis/Offsets/OffsetManager.hpp"
+
 // Disable c99-designator to avoid the warning in CGOTO dispatch table
 #ifdef __clang__
 #if __has_warning("-Wc99-designator")
@@ -3053,6 +3056,20 @@ void luau_execute(lua_State* L)
 
 int luau_precall(lua_State* L, StkId func, int nresults)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto rbxfunc = reinterpret_cast<int(__fastcall*)(lua_State* L, StkId func, int nresults)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luau_precall)
+    );
+    return rbxfunc(L, func, nresults);
+
+
+
+
+
+
+
+
+
     if (!ttisfunction(func))
     {
         luaV_tryfuncTM(L, func);

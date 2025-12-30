@@ -616,6 +616,20 @@ static TValue* newkey(lua_State* L, LuaTable* t, const TValue* key)
 */
 const TValue* luaH_getnum(LuaTable* t, int key)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<const TValue*(__fastcall*)(LuaTable* t, int key)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaH_getnum)
+    );
+    return func(t, key);
+
+
+
+
+
+
+
+
+
     // (1 <= key && key <= t->sizearray)
     if (unsigned(key) - 1 < unsigned(t->sizearray))
         return &t->array[key - 1];
@@ -748,6 +762,20 @@ TValue* luaH_setnum(lua_State* L, LuaTable* t, int key)
 
 TValue* luaH_setstr(lua_State* L, LuaTable* t, TString* key)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<TValue*(__fastcall*)(lua_State* L, LuaTable* t, TString* key)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaH_setstr)
+    );
+    return func(L, t, key);
+
+
+
+
+
+
+
+
+
     const TValue* p = luaH_getstr(t, key);
     invalidateTMcache(t);
     if (p != luaO_nilobject)
