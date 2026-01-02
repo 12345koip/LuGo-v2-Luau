@@ -14,6 +14,9 @@
 
 #include <string.h>
 
+#include "Analysis/Dissassembler/AsmInstruction.hpp"
+#include "Analysis/Offsets/OffsetManager.hpp"
+
 /*
  * Luau uses an incremental non-generational non-moving mark&sweep garbage collector.
  *
@@ -1069,6 +1072,20 @@ static size_t getheaptrigger(global_State* g, size_t heapgoal)
 
 size_t luaC_step(lua_State* L, bool assist)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<size_t(__fastcall*)(lua_State* L, bool assist)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaC_step)
+    );
+    return func(L, assist);
+
+
+
+
+
+
+
+
+
     global_State* g = L->global;
 
     int lim = g->gcstepsize * g->gcstepmul / 100; // how much to work
@@ -1131,6 +1148,20 @@ size_t luaC_step(lua_State* L, bool assist)
 
 void luaC_fullgc(lua_State* L)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<void(__fastcall*)(lua_State* L)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaC_fullgc)
+    );
+    return func(L);
+
+
+
+
+
+
+
+
+
     global_State* g = L->global;
 
 #ifdef LUAI_GCMETRICS
@@ -1211,6 +1242,21 @@ void luaC_barrierf(lua_State* L, GCObject* o, GCObject* v)
 
 void luaC_barriertable(lua_State* L, LuaTable* t, GCObject* v)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<void(__fastcall*)(lua_State* L, LuaTable* t, GCObject* v)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaC_barriertable)
+    );
+    return func(L, t, v);
+
+
+
+
+
+
+
+
+
+
     global_State* g = L->global;
     GCObject* o = obj2gco(t);
 
@@ -1231,6 +1277,21 @@ void luaC_barriertable(lua_State* L, LuaTable* t, GCObject* v)
 
 void luaC_barrierback(lua_State* L, GCObject* o, GCObject** gclist)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<void(__fastcall*)(lua_State* L, GCObject* o, GCObject** gclist)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaC_barrierback)
+    );
+    return func(L, o, gclist);
+
+
+
+
+
+
+
+
+
+
     global_State* g = L->global;
     LUAU_ASSERT(isblack(o) && !isdead(g, o));
     LUAU_ASSERT(g->gcstate != GCSpause);

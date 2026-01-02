@@ -15,6 +15,8 @@
 
 #include <string.h>
 
+#include "libhat/include/libhat/scanner.hpp"
+#include "libhat/include/libhat/signature.hpp"
 #include "src/Internal/Analysis/Dissassembler/AsmInstruction.hpp"
 #include "src/Internal/Analysis/Offsets/OffsetManager.hpp"
 
@@ -724,6 +726,20 @@ const char* lua_pushfstringL(lua_State* L, const char* fmt, ...)
 
 void lua_pushcclosurek(lua_State* L, lua_CFunction fn, const char* debugname, int nup, lua_Continuation cont)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<void(__fastcall*)(lua_State* L, lua_CFunction fn, const char* debugname, int nup, lua_Continuation cont)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::lua_pushcclosurek)
+    );
+    return func(L, fn, debugname, nup, cont);
+
+
+
+
+
+
+
+
+
     luaC_checkGC(L);
     luaC_threadbarrier(L);
     api_checknelems(L, nup);
