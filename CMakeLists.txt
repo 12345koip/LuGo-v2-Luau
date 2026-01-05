@@ -31,7 +31,8 @@ add_library(Luau.Analysis STATIC)
 add_library(Luau.CodeGen STATIC)
 add_library(Luau.VM STATIC)
 add_library(Luau.Require STATIC)
-add_library(isocline STATIC)
+add_library(isocline STATIC
+        VM/include/luauext.hpp)
 
 if(LUAU_BUILD_CLI)
     add_executable(Luau.Repl.CLI)

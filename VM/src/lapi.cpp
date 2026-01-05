@@ -47,28 +47,6 @@ const char* lua_ident = "$Lua: Lua 5.1.4 Copyright (C) 1994-2008 Lua.org, PUC-Ri
 const char* luau_ident = "$Luau: Copyright (C) 2019-2024 Roblox Corporation $\n"
                          "$URL: luau.org $\n";
 
-#define api_checknelems(L, n) api_check(L, (n) <= (L->top - L->base))
-
-#define api_checkvalidindex(L, i) api_check(L, (i) != luaO_nilobject)
-
-#define api_incr_top(L) \
-    { \
-        api_check(L, L->top < L->ci->top); \
-        L->top++; \
-    }
-
-#define api_update_top(L, p) \
-    { \
-        api_check(L, p >= L->base && p < L->ci->top); \
-        L->top = p; \
-    }
-
-#define updateatom(L, ts) \
-    { \
-        if (ts->atom == ATOM_UNDEF) \
-            ts->atom = L->global->cb.useratom ? L->global->cb.useratom(ts->data, ts->len) : -1; \
-    }
-
 static LuaTable* getcurrenv(lua_State* L)
 {
     if (L->ci == L->base_ci) // no enclosing function?
@@ -79,6 +57,21 @@ static LuaTable* getcurrenv(lua_State* L)
 
 static LUAU_NOINLINE TValue* pseudo2addr(lua_State* L, int idx)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<TValue*(__fastcall*)(lua_State* L, int idx)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::pseudo2addr)
+    );
+    return func(L, idx);
+
+
+
+
+
+
+
+
+
+
     api_check(L, lua_ispseudo(idx));
     switch (idx)
     { // pseudo-indices

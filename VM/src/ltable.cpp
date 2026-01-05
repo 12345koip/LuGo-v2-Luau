@@ -556,6 +556,21 @@ static LuaNode* getfreepos(LuaTable* t)
 */
 static TValue* newkey(lua_State* L, LuaTable* t, const TValue* key)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<TValue*(__fastcall*)(lua_State* L, LuaTable* t, const TValue* key)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::newkey)
+    );
+    return func(L, t, key);
+
+
+
+
+
+
+
+
+
+
     // enforce boundary invariant
     if (ttisnumber(key) && nvalue(key) == t->sizearray + 1)
     {
@@ -745,6 +760,21 @@ TValue* luaH_newkey(lua_State* L, LuaTable* t, const TValue* key)
 
 TValue* luaH_setnum(lua_State* L, LuaTable* t, int key)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<TValue*(__fastcall*)(lua_State* L, LuaTable* t, int key)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaH_setnum)
+    );
+    return func(L, t, key);
+
+
+
+
+
+
+
+
+
+
     // (1 <= key && key <= t->sizearray)
     if (unsigned(key) - 1 < unsigned(t->sizearray))
         return &t->array[key - 1];
