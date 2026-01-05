@@ -215,6 +215,20 @@ void lua_xpush(lua_State* from, lua_State* to, int idx)
 
 lua_State* lua_newthread(lua_State* L)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<lua_State*(__fastcall*)(lua_State* L)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::lua_newthread)
+    );
+    return func(L);
+
+
+
+
+
+
+
+
+
     luaC_checkGC(L);
     luaC_threadbarrier(L);
     lua_State* L1 = luaE_newthread(L);
