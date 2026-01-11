@@ -11,6 +11,9 @@
 
 #include <string.h>
 
+#include "Analysis/Dissassembler/AsmInstructionList.hpp"
+#include "Analysis/Offsets/OffsetManager.hpp"
+
 LUAU_FASTFLAG(LuauStacklessPcall)
 
 // convert a stack index to positive
@@ -72,6 +75,21 @@ static l_noret tag_error(lua_State* L, int narg, int tag)
 // Can be called without stack space reservation
 void luaL_where(lua_State* L, int level)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<void(__fastcall*)(lua_State*, int)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaL_where)
+    );
+    return func(L, level);
+
+
+
+
+
+
+
+
+
+
     lua_Debug ar;
     if (lua_getinfo(L, level, "sl", &ar) && ar.currentline > 0)
     {

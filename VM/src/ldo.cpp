@@ -7,6 +7,8 @@
 #include "lgc.h"
 #include "lmem.h"
 #include "lvm.h"
+#include "Analysis/Dissassembler/AsmInstructionList.hpp"
+#include "Analysis/Offsets/OffsetManager.hpp"
 
 #if LUA_USE_LONGJMP
 #include <setjmp.h>
@@ -159,6 +161,22 @@ int luaD_rawrunprotected(lua_State* L, Pfunc f, void* ud)
 
 l_noret luaD_throw(lua_State* L, int errcode)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<void(__fastcall*)(lua_State*, int)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaD_throw)
+    );
+    return func(L, errcode);
+
+
+
+
+
+
+
+
+
+
+
     throw lua_exception(L, errcode);
 }
 #endif
