@@ -820,6 +820,22 @@ TValue* luaH_setstr(lua_State* L, LuaTable* t, TString* key)
 
 TValue* luaH_setp(lua_State* L, LuaTable* t, void* key, int tag)
 {
+    const auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<TValue*(__fastcall*)(lua_State*, LuaTable*, void*, int)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::luaH_setp)
+    );
+    return func(L, t, key, tag);
+
+
+
+
+
+
+
+
+
+
+
     const TValue* p = luaH_getp(t, key, tag);
     if (p != luaO_nilobject)
         return cast_to(TValue*, p);

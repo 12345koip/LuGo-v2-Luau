@@ -217,50 +217,6 @@ typedef TValue* StkId; // index to stack elements
 ** Function Prototypes
 */
 // clang-format off
-typedef struct Proto
-{
-    CommonHeader;
-
-    uint8_t nups; // number of upvalues
-    uint8_t numparams;
-    uint8_t is_vararg;
-    uint8_t maxstacksize;
-    uint8_t flags;
-
-    TValue* k;              // constants used by the function
-    Instruction* code;      // function bytecode
-    struct Proto** p;       // functions defined inside the function
-    const Instruction* codeentry;
-
-    void* execdata;
-    uintptr_t exectarget;
-
-    uint8_t* lineinfo;      // for each instruction, line number as a delta from baseline
-    int* abslineinfo;       // baseline line info, one entry for each 1<<linegaplog2 instructions; allocated after lineinfo
-    struct LocVar* locvars; // information about local variables
-    TString** upvalues;     // upvalue names
-    TString* source;
-
-    TString* debugname;
-    uint8_t* debuginsn; // a copy of code[] array with just opcodes
-
-    uint8_t* typeinfo;
-
-    void* userdata;
-
-    GCObject* gclist;
-
-    int sizecode;
-    int sizep;
-    int sizelocvars;
-    int sizeupvalues;
-    int sizek;
-    int sizelineinfo;
-    int linegaplog2;
-    int linedefined;
-    int bytecodeid;
-    int sizetypeinfo;
-} Proto;
 // clang-format on
 
 typedef struct LocVar
