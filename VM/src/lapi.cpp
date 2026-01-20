@@ -235,7 +235,10 @@ lua_State* lua_newthread(lua_State* L)
 
 lua_State* lua_mainthread(lua_State* L)
 {
-    return L->global->mainthread;
+    return *reinterpret_cast<lua_State**>(
+        reinterpret_cast<uintptr_t>(L->global) + g_mainthreadOffset
+    );
+    //return L->global->mainthread;
 }
 
 /*
