@@ -1005,6 +1005,24 @@ void lua_rawsetptagged(lua_State* L, int idx, void* p, int tag)
 
 int lua_setmetatable(lua_State* L, int objindex)
 {
+    auto& OffsetManager = LuGo::Analysis::Offsets::OffsetManager::GetSingleton();
+    const auto func = reinterpret_cast<int(__fastcall*)(lua_State* L, int objindex)>(
+        OffsetManager.GetPointerOffset(LuGo::Analysis::Offsets::RawPointerOffsetRef::lua_setmetatable)
+    );
+
+    return func(L, objindex);
+
+
+
+
+
+
+
+
+
+
+
+
     api_checknelems(L, 1);
     TValue* obj = index2addr(L, objindex);
     api_checkvalidindex(L, obj);
